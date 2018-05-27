@@ -177,7 +177,14 @@ void SimulationContext::DispatchEvent(Event *e)
 
 
 struct link_eq {
-  bool operator() ( const Link &l, const Link &r) const { return (l.GetSrc()==r.GetSrc()) && (l.GetDest()==r.GetDest()); }
+  bool operator() ( const Link &l, const Link &r) const { 
+    if(l.GetSrc() < r.GetSrc()) return true;
+    if(l.GetSrc() == r.GetSrc()){
+ 	if(l.GetDest() < r.GetDest()) return true;
+ 	else return false;
+    }
+    return false;
+  }
 };
 
 
