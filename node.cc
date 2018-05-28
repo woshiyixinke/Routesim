@@ -39,6 +39,8 @@ double Node::GetBW() const
 Node::~Node()
 {}
 
+deque<Link*> *Node::GetOutgoingLinks() { return context->GetOutgoingLinks(this); }
+
 // Implement these functions  to post an event to the event queue in the event simulator
 // so that the corresponding node can recieve the ROUTING_MESSAGE_ARRIVAL event at the proper time
 void Node::SendToNeighbors(const RoutingMessage *m)
@@ -153,12 +155,45 @@ void Node::LinkHasBeenUpdated(const Link *l)
   // update our table
   // send out routing mesages
   cerr << *this<<": Link Update: "<<*l<<endl;
+  this->route_table->updateNeighbor(l->GetDest(), l->GetDest(), l->GetLatency());
+  deque<Node*> *nodes = this->GetNeighbors();
+  deque<Link*> *links = this->GetOutgoingLinks();
+  //deque<Node*> nodes = context->GetNeighbors();
+  RoutingMessage *message = new RoutingMessage(this->GetNumber(), l->GetDest(), l->GetLatency());
+
+  for(deque<Link*>::iterator i = links->begin(); i != links->end(); i++){
+    for(deque<Node*>::iterator j = nodes->begin(); j != nodes->end(); j++){
+      if(Node((*i)->GetDest(), 0 ,0 ,0).Matches(**j)){
+          context->PostEvent(new Event(context->GetTime() + (*i)->GetLatency(), ROUTING_MESSAGE_ARRIVAL, *j, message));
+          break;
+      }
+    }
+  } 
+  delete links;
+  delete nodes;
 }
 
 
 void Node::ProcessIncomingRoutingMessage(const RoutingMessage *m)
 {
+    Link *l = context->FindMatchingLink(new Link(this->GetNumber(), m->GetSrc(), 0, 0, 0));
+    if(this->route_table->isTableChanged(m->GetDest(), m->GetSrc(), l->GetLatency() + m->GetLatency())){
+        this->route_table->updateNeighbor(m->GetDest(), m->GetSrc(), l->GetLatency() + m->GetLatency());
+        deque<Link*> *links = context->GetOutgoingLinks(this);
+        deque<Node*> *nodes = context->GetNeighbors(this);
+        RoutingMessage *newMessage = new RoutingMessage(this->GetNumber(), m->GetDest(), l->GetLatency() + m->GetLatency());
 
+        for(deque<Link*>::iterator i = links->begin(); i != links->end(); i++){
+          for(deque<Node*>::iterator j = nodes->begin(); j != nodes->end(); j++){
+            if(Node((*i)->GetDest(), 0 ,0 ,0).Matches(**j)){
+                context->PostEvent(new Event(context->GetTime() + (*i)->GetLatency(), ROUTING_MESSAGE_ARRIVAL, *j, newMessage));
+                break;
+            }
+          }
+        } 
+        delete links;
+        delete nodes;
+    }
 }
 
 void Node::TimeOut()
@@ -169,10 +204,20 @@ void Node::TimeOut()
 
 Node *Node::GetNextHop(const Node *destination) const
 {
+  deque<Node*> *nodes = context->GetNeighbors(this);
+  unsigned res = route_table->next(destination->GetNumber());
+  for (deque<Node*>::const_iterator i = nodes->begin(); i != nodes->end(); ++i) {
+      if ((Node(res, 0, 0, 0).Matches(**i))) {//if the node exists, return node
+          return new Node(**i); 
+      }
+  }
+
+  return 0;
 }
 
 Table *Node::GetRoutingTable() const
 {
+     return this->route_table;
 }
 
 

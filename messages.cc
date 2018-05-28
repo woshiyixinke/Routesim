@@ -39,7 +39,32 @@ RoutingMessage::RoutingMessage()
 
 
 RoutingMessage::RoutingMessage(const RoutingMessage &rhs)
-{}
+{
+	this->src = rhs.src;
+	this->dest = rhs.dest;
+	this->lat = rhs.lat;
+}
+
+RoutingMessage::RoutingMessage(unsigned src, unsigned dest, unsigned lat){
+	this->src = src;
+	this->dest = dest;
+	this->lat = lat;
+}
+
+unsigned
+RoutingMessage::GetSrc() const{
+	return this->src;
+}
+
+unsigned 
+RoutingMessage::GetDest() const{
+	return this->dest;
+}
+
+unsigned
+RoutingMessage::GetLatency() const{
+	return this->lat;
+}
 
 #endif
 

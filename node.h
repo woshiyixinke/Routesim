@@ -26,6 +26,8 @@ class Node {
 #endif
 
 #if defined(DISTANCEVECTOR)
+    Table *route_table;
+    
 #endif
 
   // students will add protocol-specific data here
@@ -46,7 +48,7 @@ class Node {
   virtual double GetLatency() const;
   virtual void SetBW(const double b);
   virtual double GetBW() const;
-
+  virtual deque<Link*> *GetOutgoingLinks();
   virtual void SendToNeighbors(const RoutingMessage *m);
   virtual void SendToNeighbor(const Node *n, const RoutingMessage *m);
   virtual deque<Node*> *GetNeighbors();
