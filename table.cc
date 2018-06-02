@@ -48,9 +48,9 @@ Table::updateNeighbor(unsigned dest,unsigned intermediateNode, double lat){
         while(dvTable[dest].size() <= intermediateNode){
         	dvTable[dest].push_back((double) -1);
         }
-
+	bool res = isTableChanged(dest, intermediateNode, lat);
         dvTable[dest][intermediateNode] = lat;
-        return isTableChanged(dest, intermediateNode, lat);
+        return res;
 
 }
 
@@ -64,7 +64,7 @@ Table::getValue(unsigned dest, unsigned intermediateNode){
 
 bool
 Table::isTableChanged(unsigned dest, unsigned intermediateNode, double lat){
-		if(getValue(dest, intermediateNode) == (unsigned)-1 || getValue(dest, intermediateNode) > lat) return 1;
+        if(getValue(dest, intermediateNode) == (unsigned)-1 || getValue(dest, intermediateNode) > lat) return 1;
         return 0;
 }
 

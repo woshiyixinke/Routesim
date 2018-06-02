@@ -5,7 +5,14 @@
 
 Node::Node(const unsigned n, SimulationContext *c, double b, double l) : 
     number(n), context(c), bw(b), lat(l) 
-{}
+{
+  #if defined(DISTANCEVECTOR)
+    if (c != NULL) {
+      this->route_table = new Table(*this);
+      //cerr << "now: " << endl << *this;
+    }
+  #endif
+}
 
 Node::Node() 
 { throw GeneralException(); }
@@ -154,13 +161,14 @@ void Node::LinkHasBeenUpdated(const Link *l)
 {
   // update our table
   // send out routing mesages
+  std::cout << "this is updating links\n";
   cerr << *this<<": Link Update: "<<*l<<endl;
   this->route_table->updateNeighbor(l->GetDest(), l->GetDest(), l->GetLatency());
   deque<Node*> *nodes = this->GetNeighbors();
   deque<Link*> *links = this->GetOutgoingLinks();
   //deque<Node*> nodes = context->GetNeighbors();
   RoutingMessage *message = new RoutingMessage(this->GetNumber(), l->GetDest(), l->GetLatency());
-
+	
   for(deque<Link*>::iterator i = links->begin(); i != links->end(); i++){
     for(deque<Node*>::iterator j = nodes->begin(); j != nodes->end(); j++){
       if(Node((*i)->GetDest(), 0 ,0 ,0).Matches(**j)){
@@ -169,6 +177,7 @@ void Node::LinkHasBeenUpdated(const Link *l)
       }
     }
   } 
+ 
   delete links;
   delete nodes;
 }
@@ -206,6 +215,7 @@ Node *Node::GetNextHop(const Node *destination) const
 {
   deque<Node*> *nodes = context->GetNeighbors(this);
   unsigned res = route_table->next(destination->GetNumber());
+  cout<<"res:"<<res<<"\n";
   for (deque<Node*>::const_iterator i = nodes->begin(); i != nodes->end(); ++i) {
       if ((Node(res, 0, 0, 0).Matches(**i))) {//if the node exists, return node
           return new Node(**i); 
