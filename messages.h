@@ -15,12 +15,20 @@ class RoutingMessage {
 
 #if defined(LINKSTATE)
 class RoutingMessage {
-
+public:
   RoutingMessage();
   RoutingMessage(const RoutingMessage &rhs);
   RoutingMessage &operator=(const RoutingMessage &rhs);
-
+  RoutingMessage(unsigned src, unsigned dest, double lat, int ver);
   ostream & Print(ostream &os) const;
+  unsigned src;
+  unsigned dest;
+  double lat;
+  int ver;
+  // unsigned getSrc();
+  // unsigned getDest();
+  // double getLat();
+  // int getVer();
 };
 #endif
 
@@ -32,7 +40,7 @@ class RoutingMessage {
   unsigned lat;
   RoutingMessage();
   RoutingMessage(const RoutingMessage &rhs);
-  RoutingMessage(unsigned src, unsigned dest, unsigned lat);
+  RoutingMessage(unsigned s, unsigned d, unsigned l);
   RoutingMessage &operator=(const RoutingMessage &rhs);
   virtual unsigned GetSrc() const;
   virtual unsigned GetDest() const;
@@ -43,5 +51,4 @@ class RoutingMessage {
 
 
 inline ostream & operator<<(ostream &os, const RoutingMessage &m) { return m.Print(os);}
-
 #endif

@@ -4,7 +4,7 @@
 #include <new>
 #include <iostream>
 #include <deque>
-
+#include <vector>
 
 class RoutingMessage;
 class Table;
@@ -15,6 +15,11 @@ class SimulationContext;
 
 using namespace std;
 
+struct compare{
+  bool operator()(pair<unsigned, double> f, pair<unsigned, double> s){
+    return f.second>s.second;
+  }
+};
 class Node {
  private:
   unsigned number;
@@ -23,11 +28,16 @@ class Node {
   double   lat;
 
 #if defined(LINKSTATE)
+  Table *table;
+  public:
+   vector<unsigned> getAllNodes();
+   double findCost(unsigned src, unsigned dest);
 #endif
 
 #if defined(DISTANCEVECTOR)
-    Table *route_table;
-    
+  Table *route_table;
+  public:
+      virtual deque<Link*> *GetOutgoingLinks();
 #endif
 
   // students will add protocol-specific data here
@@ -48,7 +58,7 @@ class Node {
   virtual double GetLatency() const;
   virtual void SetBW(const double b);
   virtual double GetBW() const;
-  virtual deque<Link*> *GetOutgoingLinks();
+
   virtual void SendToNeighbors(const RoutingMessage *m);
   virtual void SendToNeighbor(const Node *n, const RoutingMessage *m);
   virtual deque<Node*> *GetNeighbors();
@@ -60,10 +70,12 @@ class Node {
   virtual void LinkHasBeenUpdated(const Link *l);
   virtual void ProcessIncomingRoutingMessage(const RoutingMessage *m);
   virtual void TimeOut();
-  virtual Node *GetNextHop(const Node *destination) const;
+  //TODO: deleted const
+  virtual Node *GetNextHop(const Node *destination);
   virtual Table *GetRoutingTable() const;
 
   virtual ostream & Print(ostream &os) const;
+  
 
 };
 
